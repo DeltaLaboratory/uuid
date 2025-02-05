@@ -22,7 +22,6 @@ describe('UUID Module', () => {
       const original = UUID.v4()
       const encoded = original.encode()
       const decoded = UUID.decode(encoded)
-      console.log(original.buffer)
       expect(decoded.buffer).toEqual(original.buffer)
     })
 
