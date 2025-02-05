@@ -72,23 +72,24 @@ class UUID {
   readonly _buffer: Uint8Array
 
   constructor(source: string | Uint8Array) {
-    if (typeof source === 'string') {
-      if (source.length === 22) {
-        this._buffer = UUID.decode(source).buffer
-        return
-      } else if (source.length === 36) {
-        const hex = source.replace(/-/g, '')
-        this._buffer = new Uint8Array(16)
-        for (let i = 0; i < 32; i += 2) {
-          this._buffer[i / 2] = parseInt(hex.substring(i, i + 2), 16)
+    switch (typeof source) {
+      case 'string':
+        switch (source.length) {
+          case 22:
+            this._buffer = UUID.decode(source).buffer
+            return
+          case 36:
+          case 36 + 9:
+          case 36 + 2:
+          case 32:
+            this._buffer = UUID.parse(source).buffer
+            return
+          default:
+            throw Error('Invalid UUID string')
         }
-        return
-      } else {
-        throw Error('Invalid UUID string')
-      }
-    } else {
-      this._buffer = new Uint8Array(source)
-      if (this._buffer.length !== 16) throw Error('Invalid UUID length')
+      default:
+        this._buffer = new Uint8Array(source)
+        if (this._buffer.length !== 16) throw Error('Invalid UUID length')
     }
   }
 
@@ -165,6 +166,53 @@ class UUID {
       }
     }
 
+    return new UUID(bytes)
+  }
+
+  static parse(s: string) {
+    switch (s.length) {
+      // xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+      case 36:
+        break
+      case 36 + 9:
+        if (s.startsWith('urn:uuid:')) {
+          s = s.slice(9)
+          break
+        }
+        throw Error('Invalid URN prefix')
+      case 36 + 2:
+        if (s.startsWith('{') && s.endsWith('}')) {
+          s = s.slice(1, -1)
+          break
+        }
+        throw Error('Invalid UUID string')
+      case 32:
+        for (let i = 0; i < 32; i++) {
+          // check s is hex
+          if (s[i] < '0' || (s[i] > '9' && s[i] < 'A') || s[i] > 'F') {
+            throw Error('Invalid UUID string')
+          }
+        }
+
+        const bytes = new Uint8Array(16)
+        for (let i = 0; i < 32; i += 2) {
+          bytes[i / 2] = parseInt(s.substring(i, i + 2), 16)
+        }
+
+        return new UUID(bytes)
+      default:
+        throw Error('Invalid UUID string')
+    }
+
+    if (s[8] !== '-' || s[13] !== '-' || s[18] !== '-' || s[23] !== '-') {
+      throw Error('Invalid UUID string')
+    }
+
+    const bytes = new Uint8Array(16)
+    const hex = s.replace(/-/g, '')
+    for (let i = 0; i < 32; i += 2) {
+      bytes[i / 2] = parseInt(hex.substring(i, i + 2), 16)
+    }
     return new UUID(bytes)
   }
 

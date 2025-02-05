@@ -75,6 +75,64 @@ describe('UUID Module', () => {
         /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/,
       )
     })
+
+    it('parses 36-character UUID string', () => {
+      const uuid = UUID.parse('12345678-1234-5678-1234-567812345678')
+      expect(uuid.buffer).toEqual(
+        Uint8Array.from([
+          18, 52, 86, 120, 18, 52, 86, 120, 18, 52, 86, 120, 18, 52, 86, 120,
+        ]),
+      )
+    })
+
+    it('parses 32-character UUID string', () => {
+      const uuid = UUID.parse('12345678123456781234567812345678')
+      expect(uuid.buffer).toEqual(
+        Uint8Array.from([
+          18, 52, 86, 120, 18, 52, 86, 120, 18, 52, 86, 120, 18, 52, 86, 120,
+        ]),
+      )
+    })
+
+    it('parses UUID string with urn prefix', () => {
+      const uuid = UUID.parse('urn:uuid:12345678-1234-5678-1234-567812345678')
+      expect(uuid.buffer).toEqual(
+        Uint8Array.from([
+          18, 52, 86, 120, 18, 52, 86, 120, 18, 52, 86, 120, 18, 52, 86, 120,
+        ]),
+      )
+    })
+
+    it('parses UUID string with curly braces', () => {
+      const uuid = UUID.parse('{12345678-1234-5678-1234-567812345678}')
+      expect(uuid.buffer).toEqual(
+        Uint8Array.from([
+          18, 52, 86, 120, 18, 52, 86, 120, 18, 52, 86, 120, 18, 52, 86, 120,
+        ]),
+      )
+    })
+
+    it('throws error for invalid UUID string length', () => {
+      expect(() => UUID.parse('123')).toThrow('Invalid UUID string')
+    })
+
+    it('throws error for invalid UUID string format', () => {
+      expect(() => UUID.parse('12345678-1234-5678-1234-56781234567')).toThrow(
+        'Invalid UUID string',
+      )
+    })
+
+    it('throws error for invalid URN prefix', () => {
+      expect(() =>
+        UUID.parse('urn:pitu:12345678-1234-5678-1234-567812345678'),
+      ).toThrow('Invalid URN prefix')
+    })
+
+    it('throws error for invalid characters in 32-character UUID string', () => {
+      expect(() => UUID.parse('1234567812345678123Z56781234567G')).toThrow(
+        'Invalid UUID string',
+      )
+    })
   })
 
   describe('Edge Cases', () => {
