@@ -1,6 +1,6 @@
 {
-  "name": "uuid",
-  "version": "0.0.1",
+  "name": "@deltalaboratory/uuid",
+  "version": "0.0.2",
   "description": "",
   "scripts": {
     "test": "vitest",
