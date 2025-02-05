@@ -29,11 +29,9 @@ class UUID {
             } else {
                 throw Error('Invalid UUID string');
             }
-        } else if (source instanceof Uint8Array) {
+        } else {
             this._buffer = new Uint8Array(source);
             if (this._buffer.length !== 16) throw Error('Invalid UUID length');
-        } else {
-            throw Error('Invalid UUID source');
         }
     }
 
@@ -59,6 +57,13 @@ class UUID {
             result[i] = charset[chunk];
         }
         return result.join('');
+    }
+
+    // time returns the timestamp encoded in the UUID
+    // note: this is only available for UUIDs generated with v7
+    time() {
+        const view = new DataView(this._buffer.buffer);
+        return view.getUint32(0, false) * 1000 + view.getUint16(4, false);
     }
 
     // toString returns the UUID as a 36-character string
@@ -129,4 +134,4 @@ class UUID {
     }
 }
 
-export default { UUID };
+export { UUID };
