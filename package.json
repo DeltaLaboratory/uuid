@@ -1,15 +1,15 @@
 {
   "name": "@deltalaboratory/uuid",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "description": "A lightweight UUID library for JavaScript/TypeScript with V4 and V7 support, offering efficient 22-character encoding and timestamp extraction.",
   "scripts": {
     "test": "vitest",
     "build": "tsc -p tsconfig.json && tsc -p tsconfig.esm.json",
     "format": "prettier --write ."
   },
-  "main": "dist/cjs/index.js",
+  "main": "dist/index.js",
   "module": "dist/esm/index.js",
-  "types": "dist/types/index.d.ts",
+  "types": "dist/index.d.ts",
   "keywords": [],
   "author": "delta <delta@deltalab.dev>",
   "license": "MIT",
