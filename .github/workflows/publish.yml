@@ -28,10 +28,10 @@ jobs:
         env:
           NODE_AUTH_TOKEN: ${{secrets.GITHUB_TOKEN}}
       - name: Publish Packages to GitHub Package Registry
-        run: pnpm publish --access public --no-git-checks --registry https://npm.pkg.github.com
+        run: pnpm publish --provenance --access public --no-git-checks --registry https://npm.pkg.github.com
       - name: Set NPM Registry config
         run: pnpm config set '//registry.npmjs.org/:_authToken' "${NODE_AUTH_TOKEN}"
         env:
           NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
       - name: Publish Packages to NPM
-        run: pnpm publish --access public --no-git-checks --registry https://registry.npmjs.org
+        run: pnpm publish --provenance --access public --no-git-checks --registry https://registry.npmjs.org
