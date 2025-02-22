@@ -21,9 +21,6 @@
     "typescript": "^5.7.3",
     "vitest": "^3.0.5"
   },
-  "publishConfig": {
-    "registry": "https://npm.pkg.github.com"
-  },
   "pnpm": {
     "onlyBuiltDependencies": [
       "esbuild"
