@@ -8,8 +8,11 @@
     "format": "prettier --write ."
   },
   "main": "dist/index.js",
-  "module": "dist/esm/index.js",
+  "module": "dist/index.js",
   "types": "dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
   "keywords": [
     "uuid"
   ],
