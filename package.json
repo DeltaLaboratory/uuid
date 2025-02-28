@@ -1,6 +1,6 @@
 {
   "name": "@deltalaboratory/uuid",
-  "version": "0.2.3",
+  "version": "0.2.4",
   "description": "A lightweight UUID library for JavaScript/TypeScript with V4 and V7 support, offering efficient 22-character encoding and timestamp extraction.",
   "scripts": {
     "test": "vitest",
