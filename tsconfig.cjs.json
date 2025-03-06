@@ -1,12 +1,12 @@
 {
   "compilerOptions": {
-    "target": "esnext",
-    "module": "esnext",
-    "moduleResolution": "bundler",
+    "target": "es2015",
+    "module": "commonjs",
+    "moduleResolution": "node",
     "declaration": true,
     "emitDeclarationOnly": true,
     "sourceMap": false,
-    "outDir": "dist/esm",
+    "outDir": "dist/cjs",
     "strict": true,
     "esModuleInterop": true,
     "skipLibCheck": true,
