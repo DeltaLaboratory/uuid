@@ -71,6 +71,9 @@ const charsetMap: Record<string, number> = {
 class UUID {
   readonly _buffer: Uint8Array
 
+  // Nil represents the nil UUID (all zeros)
+  static readonly Nil = new UUID(new Uint8Array(16).fill(0))
+
   constructor(source: string | Uint8Array) {
     switch (typeof source) {
       case 'string':
@@ -121,7 +124,18 @@ class UUID {
   // note: this is only available for UUIDs generated with v7
   time() {
     const view = new DataView(this._buffer.buffer)
-    return view.getUint32(0, false) * 1000 + view.getUint16(4, false)
+
+    // Read the first 6 bytes as a 48-bit timestamp in milliseconds
+    const msb = view.getUint32(0, false) // Most significant 32 bits
+    const lsb = view.getUint16(4, false) // Least significant 16 bits
+
+    // Combine them: left shift msb by 16 bits and add lsb
+    return msb * 0x10000 + lsb
+  }
+
+  // version returns the version number of the UUID
+  version() {
+    return (this._buffer[6] & 0xf0) >> 4
   }
 
   // toString returns the UUID as a 36-character string
@@ -138,6 +152,10 @@ class UUID {
       hex.slice(16, 20).join(''),
       hex.slice(20, 32).join(''),
     ].join('-')
+  }
+
+  equal(other: UUID) {
+    return bufferEqual(this._buffer, other._buffer)
   }
 
   // decode decodes a 22-character string into a UUID
@@ -227,20 +245,36 @@ class UUID {
   static v7(time: number = Date.now()) {
     const bytes = new Uint8Array(16)
     const view = new DataView(bytes.buffer)
-    view.setUint32(0, (time / 1000) | 0, false)
-    view.setUint16(4, time % 1000, false)
-    view.setUint16(
-      6,
-      0x7000 | (crypto.getRandomValues(new Uint16Array(1))[0] & 0x0fff),
-      false,
-    )
-    crypto.getRandomValues(new Uint8Array(bytes.buffer, 8))
+
+    // Set the time_low, time_mid, and time_high fields with the 48-bit timestamp
+    // This places the Unix timestamp (milliseconds) in the most significant 48 bits
+    view.setBigUint64(0, BigInt(time) << BigInt(16), false)
+
+    // Set the version (4 bits) to 7
+    bytes[6] = (bytes[6] & 0x0f) | 0x70
+
+    // Set the variant bits (2 bits) to 10xx (RFC 4122 variant)
+    bytes[8] = (bytes[8] & 0x3f) | 0x80
+
+    crypto.getRandomValues(new Uint8Array(bytes.buffer, 6, 10))
+
+    bytes[6] = (bytes[6] & 0x0f) | 0x70
+    bytes[8] = (bytes[8] & 0x3f) | 0x80
+
     return new UUID(bytes)
   }
 
   get buffer() {
     return this._buffer
   }
+}
+
+function bufferEqual(a: Uint8Array, b: Uint8Array) {
+  if (a.byteLength != b.byteLength) return false
+  for (let i = 0; i != a.byteLength; i++) {
+    if (a[i] != b[i]) return false
+  }
+  return true
 }
 
 export { UUID }

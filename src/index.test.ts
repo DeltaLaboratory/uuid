@@ -66,6 +66,16 @@ describe('UUID Module', () => {
       const uuid = UUID.v7()
       expect(uuid.buffer[6] & 0xf0).toBe(0x70) // Version 7
     })
+
+    it('should travel valid time', () => {
+      const now = Date.now()
+
+      const uuid = UUID.v7()
+      const encoded = uuid.encode()
+      const decoded = UUID.decode(encoded)
+
+      expect(decoded.time()).toBe(now)
+    })
   })
 
   describe('String Conversion', () => {
@@ -131,6 +141,34 @@ describe('UUID Module', () => {
     it('throws error for invalid characters in 32-character UUID string', () => {
       expect(() => UUID.parse('1234567812345678123Z56781234567G')).toThrow(
         'Invalid UUID string',
+      )
+    })
+  })
+
+  describe('Equality Check', () => {
+    it('should check equality', () => {
+      const a = UUID.parse('019597bd-76bb-7d96-b39f-a0d1df976dc3')
+      const b = UUID.parse('019597bd-76bb-7d96-b39f-a0d1df976dc3')
+      const c = UUID.parse('59c9c143-e191-4760-88e9-2890b8bf817a')
+
+      expect(a.equal(a)).toBe(true)
+      expect(a.equal(b)).toBe(true)
+      expect(b.equal(c)).toBe(false)
+    })
+  })
+
+  describe('Versions', () => {
+    it('should detect correct v4 version', () => {
+      expect(UUID.v4().version()).toBe(4)
+      expect(UUID.parse('18a094eb-f4b4-4645-973d-65aacc51ffb2').version()).toBe(
+        4,
+      )
+    })
+
+    it('should detect correct v7 version', () => {
+      expect(UUID.v7().version()).toBe(7)
+      expect(UUID.parse('019597bd-76bb-7d96-b39f-a0d1df976dc3').version()).toBe(
+        7,
       )
     })
   })
