@@ -1,7 +1,7 @@
 {
   "name": "@deltalaboratory/uuid",
-  "version": "0.3.2",
-  "description": "A lightweight UUID library for JavaScript/TypeScript with V4 and V7 support, offering efficient 22-character encoding and timestamp extraction.",
+  "version": "0.3.3",
+  "description": "A lightweight UUID library for JavaScript/TypeScript with UUIDv4 and UUIDv7 support, offering efficient 22-character encoding and timestamp extraction.",
   "keywords": [
     "uuid"
   ],
@@ -31,13 +31,13 @@
     "test": "vitest"
   },
   "devDependencies": {
-    "@vitest/coverage-v8": "^3.0.8",
-    "esbuild": "^0.25.1",
-    "prettier": "^3.5.3",
-    "typescript": "^5.8.2",
-    "vitest": "^3.0.8"
+    "@vitest/coverage-v8": "^3.2.4",
+    "esbuild": "^0.25.8",
+    "prettier": "^3.6.2",
+    "typescript": "^5.9.2",
+    "vitest": "^3.2.4"
   },
-  "packageManager": "pnpm@10.6.3+sha512.bb45e34d50a9a76e858a95837301bfb6bd6d35aea2c5d52094fa497a467c43f5c440103ce2511e9e0a2f89c3d6071baac3358fc68ac6fb75e2ceb3d2736065e6",
+  "packageManager": "pnpm@10.14.0+sha512.ad27a79641b49c3e481a16a805baa71817a04bbe06a38d17e60e2eaee83f6a146c6a688125f5792e48dd5ba30e7da52a5cda4c3992b9ccf333f9ce223af84748",
   "pnpm": {
     "onlyBuiltDependencies": [
       "esbuild"

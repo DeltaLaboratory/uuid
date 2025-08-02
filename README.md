@@ -49,17 +49,14 @@ console.log(new Date(meetingId.time()).toISOString()) // "2024-06-07T12:26:52.01
 ## Key Features
 
 - **Dual Format Support**
-
   - `toString()`: Standard 36-character format (`xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx`)
   - `encode()`: Compact 22-character URL-safe format
 
 - **Version Support**
-
   - `UUID.v4()`: Random-based UUIDs (RFC 4122)
   - `UUID.v7()`: Time-ordered UUIDs with embedded timestamps
 
 - **Efficient Encoding**
-
   - 22-character format uses base64url encoding (vs 36-char standard)
   - Maintains byte compatibility with standard UUIDs
 

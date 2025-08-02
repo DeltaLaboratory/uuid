@@ -72,7 +72,12 @@ class UUID {
   readonly _buffer: Uint8Array
 
   // Nil represents the nil UUID (all zeros)
+  // https://www.rfc-editor.org/rfc/rfc9562#section-5.9
   static readonly Nil = new UUID(new Uint8Array(16).fill(0))
+
+  // Max represents the max UUID (all ones)
+  // https://www.rfc-editor.org/rfc/rfc9562#section-5.10
+  static readonly Max = new UUID(new Uint8Array(16).fill(0xff))
 
   constructor(source: string | Uint8Array) {
     switch (typeof source) {
@@ -81,10 +86,10 @@ class UUID {
           case 22:
             this._buffer = UUID.decode(source).buffer
             return
-          case 36:
-          case 36 + 9:
-          case 36 + 2:
-          case 32:
+          case 36: // xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx/
+          case 36 + 9: // urn:uuid:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+          case 36 + 2: // {xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx}
+          case 32: // xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
             this._buffer = UUID.parse(source).buffer
             return
           default:
@@ -123,6 +128,8 @@ class UUID {
   // time returns the timestamp encoded in the UUID
   // note: this is only available for UUIDs generated with v7
   time() {
+    if (this.version() !== 7) throw Error('Not a v7 UUID')
+
     const view = new DataView(this._buffer.buffer)
 
     // Read the first 6 bytes as a 48-bit timestamp in milliseconds
@@ -138,7 +145,9 @@ class UUID {
     return (this._buffer[6] & 0xf0) >> 4
   }
 
-  // toString returns the UUID as a 36-character string
+  // toString returns UUID as a 36-character string in form of
+  // xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+  // https://www.rfc-editor.org/rfc/rfc9562#section-4
   toString() {
     const hex = []
     for (let i = 0; i < this._buffer.length; i++) {
@@ -152,6 +161,11 @@ class UUID {
       hex.slice(16, 20).join(''),
       hex.slice(20, 32).join(''),
     ].join('-')
+  }
+
+  // toJSON returns JSON representation of UUID
+  toJSON() {
+    return this.toString()
   }
 
   equal(other: UUID) {
@@ -234,7 +248,20 @@ class UUID {
     return new UUID(bytes)
   }
 
+  // UUIDv4 (https://www.rfc-editor.org/rfc/rfc9562#section-5.4)
   static v4() {
+    //  0                   1                   2                   3
+    //  0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+    // +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+    // |                           random_a                            |
+    // +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+    // |          random_a             |  ver  |       random_b        |
+    // +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+    // |var|                       random_c                            |
+    // +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+    // |                           random_c                            |
+    // +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+
     const bytes = new Uint8Array(16)
     crypto.getRandomValues(bytes)
     bytes[6] = (bytes[6] & 0x0f) | 0x40
@@ -242,23 +269,34 @@ class UUID {
     return new UUID(bytes)
   }
 
+  // UUIDv7 (https://www.rfc-editor.org/rfc/rfc9562#section-5.7)
   static v7(time: number = Date.now()) {
+    //  0                   1                   2                   3
+    //  0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+    // +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+    // |                           unix_ts_ms                          |
+    // +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+    // |          unix_ts_ms           |  ver  |       rand_a          |
+    // +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+    // |var|                        rand_b                             |
+    // +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+    // |                            rand_b                             |
+    // +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+
     const bytes = new Uint8Array(16)
     const view = new DataView(bytes.buffer)
 
-    // Set the time_low, time_mid, and time_high fields with the 48-bit timestamp
-    // This places the Unix timestamp (milliseconds) in the most significant 48 bits
-    view.setBigUint64(0, BigInt(time) << BigInt(16), false)
+    // Set the 48-bit timestamp in the first 6 bytes
+    view.setUint32(0, Math.floor(time / 0x10000), false) // Upper 32 bits
+    view.setUint16(4, time & 0xffff, false) // Lower 16 bits
 
-    // Set the version (4 bits) to 7
-    bytes[6] = (bytes[6] & 0x0f) | 0x70
-
-    // Set the variant bits (2 bits) to 10xx (RFC 4122 variant)
-    bytes[8] = (bytes[8] & 0x3f) | 0x80
-
+    // Fill remaining 10 bytes with random data
     crypto.getRandomValues(new Uint8Array(bytes.buffer, 6, 10))
 
+    // Set version (4 bits) to 7 in byte 6
     bytes[6] = (bytes[6] & 0x0f) | 0x70
+
+    // Set variant (2 bits) to 0b10 in byte 8
     bytes[8] = (bytes[8] & 0x3f) | 0x80
 
     return new UUID(bytes)
